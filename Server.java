@@ -1,15 +1,21 @@
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 // Clase que extiende Thread para manejar cada cliente en un hilo independiente
 class ClientHandler extends Thread {
-	private Socket clientSocket;
+	private SSLSocket clientSocket;
 
-	public ClientHandler(Socket socket) {
+	public ClientHandler(SSLSocket socket) {
 		this.clientSocket = socket;
 	}
 
@@ -48,20 +54,36 @@ public class Server {
 	public static void main(String[] args) {
 		int port = 1234; // Puerto donde escuchará el servidor
 
-		try (ServerSocket serverSocket = new ServerSocket(port)) {
+		try {
+			// Cargar el almacén de claves
+			KeyStore keyStore = KeyStore.getInstance("JKS");
+			keyStore.load(new FileInputStream("serverkeystore.jks"), "123456".toCharArray());
+
+			// Inicializar KeyManagerFactory con el almacén de claves
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+			keyManagerFactory.init(keyStore, "123456".toCharArray());
+
+			// Configurar SSLContext con KeyManager
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
+
+			// Crear SSLServerSocketFactory a partir del SSLContext
+			SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory();
+			SSLServerSocket sslServerSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(port);
+
 			System.out.println("Servidor escuchando en el puerto " + port);
 
 			// Bucle infinito para aceptar conexiones de múltiples clientes
 			while (true) {
-				Socket clientSocket = serverSocket.accept(); // Espera por la conexión de un cliente
-				System.out.println("Cliente conectado: " + clientSocket.getRemoteSocketAddress());
+				SSLSocket sslSocket = (SSLSocket) sslServerSocket.accept(); // Espera por la conexión de un cliente
+				System.out.println("Cliente conectado: " + sslSocket.getRemoteSocketAddress());
 
 				// Crear y arrancar un nuevo hilo para manejar al cliente
-				ClientHandler clientHandler = new ClientHandler(clientSocket);
+				ClientHandler clientHandler = new ClientHandler(sslSocket);
 				clientHandler.start(); // Iniciar el hilo para el cliente
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
