@@ -1,3 +1,5 @@
+package client;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -17,7 +19,7 @@ public class Client {
 		try {
 			// Cargar el almacén de claves del cliente
 			KeyStore trustStore = KeyStore.getInstance("JKS");
-			trustStore.load(new FileInputStream("clienttruststore.jks"), "123456".toCharArray());
+			trustStore.load(new FileInputStream("client/clienttruststore.jks"), "123456".toCharArray());
 
 			// Inicializar TrustManagerFactory con el almacén de claves
 			TrustManagerFactory trustManagerFactory = TrustManagerFactory

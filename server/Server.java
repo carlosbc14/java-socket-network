@@ -1,3 +1,5 @@
+package server;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -57,7 +59,7 @@ public class Server {
 		try {
 			// Cargar el almacén de claves
 			KeyStore keyStore = KeyStore.getInstance("JKS");
-			keyStore.load(new FileInputStream("serverkeystore.jks"), "123456".toCharArray());
+			keyStore.load(new FileInputStream("server/serverkeystore.jks"), "123456".toCharArray());
 
 			// Inicializar KeyManagerFactory con el almacén de claves
 			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
